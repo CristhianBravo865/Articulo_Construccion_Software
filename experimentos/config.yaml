@@ -1,0 +1,17 @@
+# Configuraciones del experimento (ver DISENO.md, sección 3)
+semilla: 42
+max_new_tokens: 512
+max_chars_funcion: 1500
+n_casos: 150
+
+modelos:
+  codellama7b: codellama/CodeLlama-7b-Instruct-hf
+  qwen1_5b: Qwen/Qwen2.5-Coder-1.5B-Instruct
+
+configuraciones:
+  L-16: {modelo: codellama7b, bits: 16}
+  L-8:  {modelo: codellama7b, bits: 8}
+  L-4:  {modelo: codellama7b, bits: 4}
+  Q-16: {modelo: qwen1_5b, bits: 16}
+  Q-8:  {modelo: qwen1_5b, bits: 8}
+  Q-4:  {modelo: qwen1_5b, bits: 4}
