@@ -187,9 +187,36 @@ RQ4: índice de Jaccard entre los conjuntos de casos reparados.
 | Instalar entorno (`requirements.txt`) | Laptop | en curso |
 | Descargar FixMe y preparar dataset | Laptop | **hecho** |
 | Probar evaluación y análisis con parches simulados | Laptop | **hecho** |
-| Piloto: Q-16/Q-8/Q-4 con pocos casos | Laptop | pendiente |
-| Corrida completa Qwen (Q-16/8/4) | Laptop | pendiente |
+| Piloto: Q-16/Q-8/Q-4 con pocos casos | Laptop | **hecho** (ver 9) |
+| Corrida completa Qwen (Q-16/8/4) | Laptop | en curso (`scripts/correr_laptop.ps1`) |
 | Prueba L-4-local (¿cabe en 4 GB?) | Laptop | pendiente |
 | Corrida CodeLlama L-16/8/4 | Colab | pendiente |
 | Evaluación (Bandit, CodeBLEU) y análisis | Laptop | pendiente |
 | Revisión manual de ~20 parches | Laptop | pendiente |
+
+## 9. Piloto en la laptop (21 nov. 2026)
+
+Qwen2.5-Coder-1.5B-Instruct, 5 casos de E2, RTX 3050 Laptop 4 GB, PyTorch 2.6.0+cu124,
+transformers 5.20.2, bitsandbytes 0.50.2.
+
+| Config | Memoria del modelo | VRAM pico | s/parche (media) | tokens/s |
+|---|---|---|---|---|
+| Q-16 | 2 944 MiB | 2 970 MiB | 10,6 | 9,8 |
+| Q-8 | 1 702 MiB | 1 733 MiB | 43,3 | 2,5 |
+| Q-4 | 1 100 MiB | 1 150 MiB | 9,4 | 6,8 |
+
+Primeras observaciones (5 casos, **no concluyentes**):
+- 4 bits reduce la memoria del modelo un 63 % frente a FP16; 8 bits, un 42 %.
+- INT8 de bitsandbytes es unas 4 veces más lento que FP16 en esta GPU. Esto coincide con lo
+  que reportan Vallecillos-Ruiz et al.: menos memoria no implica menos tiempo de inferencia.
+- Q-4 produjo 2 de 5 respuestas que no conservaban la función original (p. ej., solo
+  `obj['key']`); el control `conserva_funciones` las descarta como reparación.
+
+Ajustes hechos tras el piloto:
+- Extracción de código robusta: prueba cada tramo entre cercas ``` y quita prosa inicial.
+- La generación se corta al cerrar un bloque de código válido (antes llegaba a 512 tokens
+  con explicaciones). Con decodificación voraz esto no cambia el código generado.
+- Control `conserva_funciones`: el parche debe definir las mismas funciones/clases.
+
+Estimación para la corrida completa en la laptop (199 casos × 3 configs): ~3–4 h,
+la mayor parte en Q-8.
