@@ -1,7 +1,7 @@
 """Genera parches con una configuracion (modelo + bits) y registra tiempo y memoria.
 
 Uso:
-    python 02_generar_parches.py --config Q-4 [--limite 10] [--hardware laptop-rtx3050]
+    python 02_generar_parches.py --experimento E2 --config Q-4 [--limite 10] [--hardware laptop]
 
 Es reanudable: si el archivo de salida ya tiene casos, los salta (util en Colab).
 """
@@ -40,7 +40,7 @@ def cargar_modelo(model_id: str, bits: int):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
-    ap.add_argument("--dataset", default=str(RAIZ / "datos" / "dataset.jsonl"))
+    ap.add_argument("--experimento", required=True, choices=["E1", "E2"])
     ap.add_argument("--limite", type=int, default=None)
     ap.add_argument("--hardware", default="desconocido")
     args = ap.parse_args()
@@ -48,9 +48,9 @@ def main():
     cfg = cargar_config()
     c = cfg["configuraciones"][args.config]
     model_id = cfg["modelos"][c["modelo"]]
-    casos = leer_jsonl(args.dataset)[: args.limite]
+    casos = leer_jsonl(RAIZ / "datos" / f"{args.experimento}.jsonl")[: args.limite]
 
-    salida = RAIZ / "resultados" / f"gen_{args.config}_{args.hardware}.jsonl"
+    salida = RAIZ / "resultados" / f"gen_{args.experimento}_{args.config}_{args.hardware}.jsonl"
     hechos = {x["id"] for x in leer_jsonl(salida)} if salida.exists() else set()
     pendientes = [x for x in casos if x["id"] not in hechos]
     print(f"{args.config}: {model_id} a {c['bits']} bits | {len(pendientes)} pendientes")

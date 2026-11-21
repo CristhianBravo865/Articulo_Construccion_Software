@@ -75,6 +75,33 @@ def bandit_ids(codigo: str) -> list[str] | None:
         return sorted(x["test_id"] for x in datos["results"])
 
 
+def bandit_lote(codigos: dict[str, str]) -> dict[str, list[str] | None]:
+    """Como bandit_ids pero para muchos fragmentos en una sola llamada a Bandit."""
+    res = {k: None for k in codigos}
+    with tempfile.TemporaryDirectory() as d:
+        nombres = {}
+        for i, (k, cod) in enumerate(codigos.items()):
+            if es_valido(cod):
+                f = Path(d) / f"f{i}.py"
+                f.write_text(normalizar(cod), encoding="utf-8")
+                nombres[f.stem] = k
+                res[k] = []
+        if not nombres:
+            return res
+        r = subprocess.run(
+            [sys.executable, "-m", "bandit", "-q", "-r", "-f", "json", d],
+            capture_output=True, text=True, encoding="utf-8",
+        )
+        datos = json.loads(r.stdout)
+        for e in datos.get("errors", []):
+            res[nombres[Path(e["filename"]).stem]] = None
+        for x in datos["results"]:
+            k = nombres[Path(x["filename"]).stem]
+            if res[k] is not None:
+                res[k].append(x["test_id"])
+    return {k: (sorted(v) if v is not None else None) for k, v in res.items()}
+
+
 def leer_jsonl(ruta):
     with open(ruta, encoding="utf-8") as f:
         return [json.loads(l) for l in f if l.strip()]

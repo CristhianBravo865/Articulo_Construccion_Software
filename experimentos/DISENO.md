@@ -116,7 +116,12 @@ Alternativa revisada: **SecurityEval** (Siddiq y Santos, MSR4P&S 2022;
 `s2e-lab/SecurityEval`): 121 funciones Python inseguras por CWE (campo `Insecure_code`).
 Bandit reporta hallazgos en **49 de 121**, sin errores de análisis.
 
-### 4.2 Propuesta (⚠ decidir)
+### 4.2 Decisión: dos experimentos (aprobada 21 nov. 2026)
+
+Resultado de `01_preparar_dataset.py` (`datos/embudo.json`): E1 = 150 casos (de 583 hunks
+válidos con ≤ 1500 caracteres; en 5 de ellos Bandit reporta algo en la versión vulnerable);
+E2 = 49 casos (de 121). SecurityEval no declara licencia en GitHub, así que `E2.jsonl` no se
+sube al repo: el script lo descarga y lo genera.
 
 Dos experimentos complementarios con los mismos modelos y configuraciones:
 
@@ -156,6 +161,9 @@ Por parche generado:
 | CodeBLEU, ROUGE-L | Contra la corrección de referencia (comparables con PatchLM) | RQ1 |
 | VRAM pico, s/parche, tokens/s | Registrados durante la generación | RQ3 |
 
+En E1 casi ningún caso tiene oráculo de eliminación (5 de 150), así que ahí RQ1 se mide con
+CodeBLEU/ROUGE-L y RQ2 con "introducida". En E2 la métrica principal es "reparación segura".
+
 Comparación estadística: cada configuración cuantizada contra su línea base FP16 con la
 **prueba de McNemar** (datos pareados y binarios: mismos casos, reparado sí/no), α = 0,05.
 RQ4: índice de Jaccard entre los conjuntos de casos reparados.
@@ -176,9 +184,10 @@ RQ4: índice de Jaccard entre los conjuntos de casos reparados.
 
 | Paso | Dónde | Estado |
 |---|---|---|
-| Instalar entorno (`requirements.txt`) | Laptop | pendiente |
-| Descargar FixMe y preparar dataset | Laptop | pendiente |
-| Piloto: Q-16/Q-8/Q-4 con 10 casos | Laptop | pendiente |
+| Instalar entorno (`requirements.txt`) | Laptop | en curso |
+| Descargar FixMe y preparar dataset | Laptop | **hecho** |
+| Probar evaluación y análisis con parches simulados | Laptop | **hecho** |
+| Piloto: Q-16/Q-8/Q-4 con pocos casos | Laptop | pendiente |
 | Corrida completa Qwen (Q-16/8/4) | Laptop | pendiente |
 | Prueba L-4-local (¿cabe en 4 GB?) | Laptop | pendiente |
 | Corrida CodeLlama L-16/8/4 | Colab | pendiente |
