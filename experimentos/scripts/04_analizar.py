@@ -4,19 +4,26 @@ Uso:
     python 04_analizar.py           (lee resultados/eval_*.jsonl)
 Escribe resultados/resumen.csv y resultados/comparaciones.csv
 
-Variable binaria comparada con McNemar:
-  E2 -> reparacion_segura (oraculo Bandit: eliminada, sin introducir, cambio valido)
-  E1 -> introducida (el parche agrega hallazgos de Bandit que no tenia el codigo vulnerable)
+Comparaciones contra la linea base FP16 del mismo modelo y hardware:
+  Binarias (McNemar exacta): E2 reparacion_segura, cambio_valido, introducida;
+                             E1 cambio_valido, introducida.
+  Continuas (Wilcoxon pareada): E1 codebleu, rouge_l.
+  "solo_base"/"solo_comparada": casos en que solo una de las dos acierta (o es mayor).
 """
 import numpy as np
 import pandas as pd
+from scipy.stats import wilcoxon
 from statsmodels.stats.contingency_tables import mcnemar
 
 from comun import RAIZ, leer_jsonl
 
 LINEA_BASE = {"L": "L-16", "Q": "Q-16"}
-VARIABLE = {"E1": "introducida", "E2": "reparacion_segura"}
+BINARIAS = {"E1": ["cambio_valido", "introducida"],
+            "E2": ["reparacion_segura", "reparacion_segura_sin_imports", "cambio_valido",
+                   "introducida"]}
+CONTINUAS = {"E1": ["codebleu", "rouge_l"], "E2": []}
 BOOL = ["valido", "cambio_valido", "identico_vulnerable", "eliminada", "introducida",
+        "eliminada_sin_imports", "reparacion_segura_sin_imports",
         "reparacion_segura"]
 
 
@@ -44,21 +51,32 @@ def main():
         base = f"{exp}|{LINEA_BASE[config[0]]}|{hw}"
         if grupo == base or base not in resumen.index:
             continue
-        var = VARIABLE[exp]
-        a = df[df.grupo == base].set_index("id")[var].dropna().astype(bool)
-        b = df[df.grupo == grupo].set_index("id")[var].dropna().astype(bool)
-        ids = a.index.intersection(b.index)
-        a, b = a[ids], b[ids]
-        tabla = [[int((a & b).sum()), int((a & ~b).sum())],
-                 [int((~a & b).sum()), int((~a & ~b).sum())]]
-        p = mcnemar(tabla, exact=True).pvalue
-        ra, rb = set(ids[a.values]), set(ids[b.values])
-        jac = len(ra & rb) / len(ra | rb) if ra | rb else float("nan")
-        comps.append({"experimento": exp, "base": base, "comparada": grupo, "variable": var,
-                      "n": len(ids), "tasa_base": round(a.mean(), 4),
-                      "tasa_comparada": round(b.mean(), 4),
-                      "solo_base": tabla[0][1], "solo_comparada": tabla[1][0],
-                      "mcnemar_p": round(p, 4), "jaccard": round(jac, 3)})
+        da = df[df.grupo == base].set_index("id")
+        db = df[df.grupo == grupo].set_index("id")
+        for var in BINARIAS[exp]:
+            a, b = da[var].dropna().astype(bool), db[var].dropna().astype(bool)
+            ids = a.index.intersection(b.index)
+            a, b = a[ids], b[ids]
+            tabla = [[int((a & b).sum()), int((a & ~b).sum())],
+                     [int((~a & b).sum()), int((~a & ~b).sum())]]
+            p = mcnemar(tabla, exact=True).pvalue
+            ra, rb = set(ids[a.values]), set(ids[b.values])
+            jac = len(ra & rb) / len(ra | rb) if ra | rb else float("nan")
+            comps.append({"experimento": exp, "base": base, "comparada": grupo,
+                          "variable": var, "prueba": "McNemar exacta", "n": len(ids),
+                          "valor_base": round(a.mean(), 4), "valor_comparada": round(b.mean(), 4),
+                          "solo_base": tabla[0][1], "solo_comparada": tabla[1][0],
+                          "p": round(p, 4), "jaccard": round(jac, 3)})
+        for var in CONTINUAS[exp]:
+            a, b = da[var].dropna(), db[var].dropna()
+            ids = a.index.intersection(b.index)
+            a, b = a[ids], b[ids]
+            p = wilcoxon(a, b).pvalue if (a != b).any() else 1.0
+            comps.append({"experimento": exp, "base": base, "comparada": grupo,
+                          "variable": var, "prueba": "Wilcoxon pareada", "n": len(ids),
+                          "valor_base": round(a.mean(), 4), "valor_comparada": round(b.mean(), 4),
+                          "solo_base": int((a > b).sum()), "solo_comparada": int((b > a).sum()),
+                          "p": round(p, 4), "jaccard": None})
     if comps:
         c = pd.DataFrame(comps)
         c.to_csv(RAIZ / "resultados" / "comparaciones.csv", index=False)

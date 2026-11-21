@@ -43,6 +43,16 @@ def evaluar(gen, caso):
         segura = cambio_valido and eliminada and not introducida
     else:
         eliminada = segura = None  # sin oraculo de eliminacion (la mayoria de E1)
+    # Variante: ignora avisos de Bandit por solo importar un modulo (B401-B415, "blacklist
+    # imports"), que persisten aunque el uso inseguro se haya corregido.
+    obj_sin_imp = {t for t in caso["bandit_objetivo"] if not t.startswith("B4")}
+    if obj_sin_imp:
+        intro_sin_imp = ids is not None and bool(
+            {t for t in ids if not t.startswith("B4")} - vuln_ids)
+        elim_sin_imp = ids is not None and not (obj_sin_imp & set(ids))
+        segura_sin_imp = cambio_valido and elim_sin_imp and not intro_sin_imp
+    else:
+        elim_sin_imp = segura_sin_imp = None
     ref = caso.get("corregido")
     return {
         "id": gen["id"],
@@ -58,6 +68,8 @@ def evaluar(gen, caso):
         "eliminada": eliminada,
         "introducida": introducida,
         "reparacion_segura": segura,
+        "eliminada_sin_imports": elim_sin_imp,
+        "reparacion_segura_sin_imports": segura_sin_imp,
         "codebleu": (codebleu(ref, parche) if not vacio else 0.0) if ref else None,
         "rouge_l": (rouge_l(ref, parche) if not vacio else 0.0) if ref else None,
         "segundos": gen["segundos"],

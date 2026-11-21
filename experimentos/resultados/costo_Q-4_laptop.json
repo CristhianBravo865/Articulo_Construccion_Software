@@ -1,0 +1,22 @@
+{
+  "config": "Q-4",
+  "modelo": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+  "bits": 4,
+  "hardware": "laptop",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "torch": "2.6.0+cu124",
+  "prompts": 10,
+  "tokens_por_prompt": 128,
+  "repeticiones": 3,
+  "segundos_carga": 10.6,
+  "memoria_modelo_mib": 1099.9,
+  "vram_pico_mib": 1149.6,
+  "ms_por_token_media": 61.1,
+  "ms_por_token_desv": 0.63,
+  "tokens_por_seg": 16.37,
+  "ms_por_token_reps": [
+    60.89,
+    61.8,
+    60.61
+  ]
+}

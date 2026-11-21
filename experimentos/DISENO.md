@@ -220,3 +220,47 @@ Ajustes hechos tras el piloto:
 
 Estimación para la corrida completa en la laptop (199 casos × 3 configs): ~3–4 h,
 la mayor parte en Q-8.
+
+## 10. Resultados en la laptop: Qwen2.5-Coder-1.5B (21 nov. 2026)
+
+Corrida completa: E1 = 150 casos, E2 = 49 casos, configuraciones Q-16, Q-8 y Q-4.
+Archivos: `resultados/resumen.csv`, `resultados/comparaciones.csv`, `resultados/costo_*.json`.
+
+### Calidad (frente a la línea base FP16 del mismo modelo)
+
+| Métrica | Q-16 | Q-8 | Q-4 | Prueba (Q-16 vs Q-4) |
+|---|---|---|---|---|
+| E1 CodeBLEU (media) | 0,568 | 0,568 | **0,509** | Wilcoxon p = 0,020 |
+| E1 ROUGE-L (media) | 0,590 | 0,582 | **0,481** | Wilcoxon p = 0,002 |
+| E1 cambio válido | 74,0 % | 70,0 % | 73,3 % | McNemar p = 1,00 |
+| E1 introduce hallazgos | 0,7 % | 0,7 % | 0,7 % | McNemar p = 1,00 |
+| E2 reparación segura | 12,2 % | 12,2 % | 10,2 % | McNemar p = 1,00 |
+| E2 reparación segura (sin avisos de import) | 13,0 % | 13,0 % | 10,9 % | McNemar p = 1,00 |
+| E2 cambio válido | 83,7 % | 83,7 % | 71,4 % | McNemar p = 0,070 |
+| E2 introduce hallazgos | 6,1 % | 6,1 % | 4,1 % | McNemar p = 1,00 |
+
+Q-16 vs Q-8: ninguna diferencia significativa (CodeBLEU p = 0,38; ROUGE-L p = 0,23; en E2
+las respuestas son las mismas, Jaccard = 1,0).
+
+### Costo (medición controlada: 10 prompts × 128 tokens × 3 repeticiones, RTX 3050 4 GB)
+
+| Config | Memoria del modelo | VRAM pico | ms/token (media ± desv.) | tokens/s |
+|---|---|---|---|---|
+| Q-16 | 2 944 MiB | 2 968 MiB | 43,5 ± 0,7 | 23,0 |
+| Q-8 | 1 702 MiB (−42 %) | 1 733 MiB | 188,7 ± 1,3 (×4,3) | 5,3 |
+| Q-4 | 1 100 MiB (−63 %) | 1 150 MiB | 61,1 ± 0,6 (×1,4) | 16,4 |
+
+### Lectura preliminar (para la discusión; falta contrastar con CodeLlama-7B)
+
+1. **8 bits es prácticamente sin pérdida** en calidad, pero en esta GPU es 4,3 veces más lento.
+   Menos memoria no implica menos tiempo (coincide con Vallecillos-Ruiz et al.).
+2. **4 bits baja de forma significativa el parecido con la corrección real** (CodeBLEU −10 %,
+   ROUGE-L −19 %) y tiende a producir más respuestas inválidas en E2 (p = 0,07, no significativo).
+3. **No se observa que la cuantización introduzca más vulnerabilidades** (tasas ≤ 6 %, iguales o
+   menores que en FP16). Con tan pocos eventos, la potencia estadística es baja.
+4. **Efecto suelo en E2:** el modelo de 1,5B repara de forma segura solo ~12 % de los casos aun en
+   FP16. En 34 de 49 casos (FP16) mantiene el mismo hallazgo de Bandit; excluir los avisos por
+   solo importar un módulo casi no cambia la tasa (13,0 %). Con tasas tan bajas, McNemar no puede
+   detectar diferencias: hace falta el modelo de 7B (Colab) para que RQ1 en E2 sea informativa.
+5. Los tiempos de la corrida principal (`segundos` en `resumen.csv`) dependen de la longitud de
+   cada respuesta y de la carga de la laptop; para RQ3 se usan solo los de la medición controlada.

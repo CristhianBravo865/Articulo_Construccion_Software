@@ -1,4 +1,7 @@
-grupo,n,valido,cambio_valido,identico_vulnerable,eliminada,introducida,reparacion_segura,codebleu,rouge_l,segundos,tok_por_seg,vram_pico_mib
-E2|Q-16|laptop,5,1.0,1.0,0.0,0.2,0.2,0.2,,,10.5898,9.7641,2970.1
-E2|Q-4|laptop,5,1.0,0.6,0.0,0.6,0.0,0.2,,,9.4352,6.7831,1149.6
-E2|Q-8|laptop,5,1.0,1.0,0.0,0.2,0.2,0.2,,,43.349,2.4591,1733.2
+grupo,n,valido,cambio_valido,identico_vulnerable,eliminada,introducida,eliminada_sin_imports,reparacion_segura_sin_imports,reparacion_segura,codebleu,rouge_l,segundos,tok_por_seg,vram_pico_mib
+E1|Q-16|laptop,150,0.9733,0.74,0.2133,0.5,0.0067,0.5,0.5,0.5,0.5679,0.5903,3.5059,22.7158,2994.1
+E1|Q-4|laptop,150,0.98,0.7333,0.2,0.5,0.0067,0.5,0.5,0.5,0.5084,0.4806,3.788,15.5757,1165.2
+E1|Q-8|laptop,150,0.9733,0.7,0.24,0.5,0.0067,0.5,0.5,0.5,0.5675,0.5821,17.2606,4.9728,1763.9
+E2|Q-16|laptop,49,1.0,0.8367,0.1429,0.1633,0.0612,0.1739,0.1304,0.1224,,,14.2232,7.3306,2977.7
+E2|Q-4|laptop,49,1.0,0.7143,0.1429,0.2449,0.0408,0.2391,0.1087,0.102,,,7.1577,14.8721,1156.4
+E2|Q-8|laptop,49,1.0,0.8367,0.1429,0.1633,0.0612,0.1739,0.1304,0.1224,,,23.2368,4.3966,1744.7

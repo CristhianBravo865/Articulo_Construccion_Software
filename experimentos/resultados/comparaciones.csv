@@ -1,3 +1,17 @@
-experimento,base,comparada,variable,n,tasa_base,tasa_comparada,solo_base,solo_comparada,mcnemar_p,jaccard
-E2,E2|Q-16|laptop,E2|Q-4|laptop,reparacion_segura,5,0.2,0.2,0,0,1.0,1.0
-E2,E2|Q-16|laptop,E2|Q-8|laptop,reparacion_segura,5,0.2,0.2,0,0,1.0,1.0
+experimento,base,comparada,variable,prueba,n,valor_base,valor_comparada,solo_base,solo_comparada,p,jaccard
+E1,E1|Q-16|laptop,E1|Q-4|laptop,cambio_valido,McNemar exacta,150,0.74,0.7333,16,15,1.0,0.754
+E1,E1|Q-16|laptop,E1|Q-4|laptop,introducida,McNemar exacta,150,0.0067,0.0067,1,1,1.0,0.0
+E1,E1|Q-16|laptop,E1|Q-4|laptop,codebleu,Wilcoxon pareada,150,0.5679,0.5084,43,31,0.0199,
+E1,E1|Q-16|laptop,E1|Q-4|laptop,rouge_l,Wilcoxon pareada,150,0.5903,0.4806,46,31,0.0021,
+E1,E1|Q-16|laptop,E1|Q-8|laptop,cambio_valido,McNemar exacta,150,0.74,0.7,8,2,0.1094,0.912
+E1,E1|Q-16|laptop,E1|Q-8|laptop,introducida,McNemar exacta,150,0.0067,0.0067,0,0,1.0,1.0
+E1,E1|Q-16|laptop,E1|Q-8|laptop,codebleu,Wilcoxon pareada,150,0.5679,0.5675,22,25,0.3798,
+E1,E1|Q-16|laptop,E1|Q-8|laptop,rouge_l,Wilcoxon pareada,150,0.5903,0.5821,30,19,0.2307,
+E2,E2|Q-16|laptop,E2|Q-4|laptop,reparacion_segura,McNemar exacta,49,0.1224,0.102,2,1,1.0,0.571
+E2,E2|Q-16|laptop,E2|Q-4|laptop,reparacion_segura_sin_imports,McNemar exacta,46,0.1304,0.1087,2,1,1.0,0.571
+E2,E2|Q-16|laptop,E2|Q-4|laptop,cambio_valido,McNemar exacta,49,0.8367,0.7143,7,1,0.0703,0.81
+E2,E2|Q-16|laptop,E2|Q-4|laptop,introducida,McNemar exacta,49,0.0612,0.0408,1,0,1.0,0.667
+E2,E2|Q-16|laptop,E2|Q-8|laptop,reparacion_segura,McNemar exacta,49,0.1224,0.1224,0,0,1.0,1.0
+E2,E2|Q-16|laptop,E2|Q-8|laptop,reparacion_segura_sin_imports,McNemar exacta,46,0.1304,0.1304,0,0,1.0,1.0
+E2,E2|Q-16|laptop,E2|Q-8|laptop,cambio_valido,McNemar exacta,49,0.8367,0.8367,0,0,1.0,1.0
+E2,E2|Q-16|laptop,E2|Q-8|laptop,introducida,McNemar exacta,49,0.0612,0.0612,0,0,1.0,1.0
