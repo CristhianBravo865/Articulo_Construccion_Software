@@ -1,16 +1,20 @@
 # PyTorch con CUDA se instala aparte:
 #   pip install torch --index-url https://download.pytorch.org/whl/cu124
 # (En Colab ya viene instalado.)
+#
+# codebleu se instala aparte y SIN dependencias, porque pide tree-sitter<0.23 y con
+# tree-sitter 0.22 + tree-sitter-python 0.25 falla ("TypeError: an integer is required").
+# La combinacion de abajo funciona (probada 21 nov. 2026 en Python 3.10 y 3.13):
+#   pip install -r requirements.txt
+#   pip install --no-deps codebleu==0.7.0
 transformers
 accelerate
 bitsandbytes
 bandit==1.9.4
-codebleu==0.7.0
-# codebleu 0.7.0 pide tree-sitter<0.23, pero con 0.22 + tree-sitter-python 0.25 falla
-# ("TypeError: an integer is required"). Esta combinacion funciona (probada 21 nov. 2026):
 tree-sitter==0.23.2
 tree-sitter-python==0.23.6
 rouge_score
 pyyaml
 pandas
 statsmodels
+scipy

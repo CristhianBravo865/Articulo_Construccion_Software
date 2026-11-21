@@ -120,6 +120,9 @@ def bandit_ids(codigo: str) -> list[str] | None:
             [sys.executable, "-m", "bandit", "-q", "-f", "json", str(f)],
             capture_output=True, text=True, encoding="utf-8",
         )
+        if not r.stdout.strip():
+            raise RuntimeError("Bandit no devolvio nada (esta instalado?). stderr:
+" + r.stderr[-2000:])
         try:
             datos = json.loads(r.stdout)
         except json.JSONDecodeError:
@@ -146,6 +149,9 @@ def bandit_lote(codigos: dict[str, str]) -> dict[str, list[str] | None]:
             [sys.executable, "-m", "bandit", "-q", "-r", "-f", "json", d],
             capture_output=True, text=True, encoding="utf-8",
         )
+        if not r.stdout.strip():
+            raise RuntimeError("Bandit no devolvio nada (esta instalado?). stderr:
+" + r.stderr[-2000:])
         datos = json.loads(r.stdout)
         for e in datos.get("errors", []):
             res[nombres[Path(e["filename"]).stem]] = None
