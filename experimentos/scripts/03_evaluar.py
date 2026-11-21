@@ -7,7 +7,7 @@ Escribe resultados/eval_<mismo nombre>.jsonl
 import sys
 from pathlib import Path
 
-from comun import RAIZ, bandit_ids, es_valido, escribir_jsonl, leer_jsonl, normalizar
+from comun import RAIZ, bandit_ids, es_valido, escribir_jsonl, leer_jsonl, nombres_def, normalizar
 
 
 def codebleu(ref: str, hip: str) -> float | None:
@@ -34,7 +34,9 @@ def evaluar(gen, caso):
     identico = normalizar(parche).strip() == normalizar(caso["vulnerable"]).strip()
     vacio = len(parche.strip()) == 0
     introducida = ids is not None and bool(set(ids) - vuln_ids)
-    cambio_valido = valido and not identico and not vacio
+    # El parche debe conservar las funciones/clases del original (evita "reparar" borrando)
+    conserva = nombres_def(caso["vulnerable"]) <= nombres_def(parche)
+    cambio_valido = valido and not identico and not vacio and conserva
     if caso["bandit_objetivo"]:
         # Hay oraculo: los hallazgos objetivo deben desaparecer
         eliminada = ids is not None and not (set(caso["bandit_objetivo"]) & set(ids))
@@ -50,6 +52,7 @@ def evaluar(gen, caso):
         "valido": valido,
         "vacio": vacio,
         "identico_vulnerable": identico,
+        "conserva_funciones": conserva,
         "cambio_valido": cambio_valido,
         "bandit_parche": ids,
         "eliminada": eliminada,

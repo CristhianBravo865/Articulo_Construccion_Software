@@ -1,0 +1,3 @@
+experimento,base,comparada,variable,n,tasa_base,tasa_comparada,solo_base,solo_comparada,mcnemar_p,jaccard
+E2,E2|Q-16|laptop,E2|Q-4|laptop,reparacion_segura,5,0.2,0.2,0,0,1.0,1.0
+E2,E2|Q-16|laptop,E2|Q-8|laptop,reparacion_segura,5,0.2,0.2,0,0,1.0,1.0

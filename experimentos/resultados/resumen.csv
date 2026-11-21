@@ -1,0 +1,4 @@
+grupo,n,valido,cambio_valido,identico_vulnerable,eliminada,introducida,reparacion_segura,codebleu,rouge_l,segundos,tok_por_seg,vram_pico_mib
+E2|Q-16|laptop,5,1.0,1.0,0.0,0.2,0.2,0.2,,,10.5898,9.7641,2970.1
+E2|Q-4|laptop,5,1.0,0.6,0.0,0.6,0.0,0.2,,,9.4352,6.7831,1149.6
+E2|Q-8|laptop,5,1.0,1.0,0.0,0.2,0.2,0.2,,,43.349,2.4591,1733.2

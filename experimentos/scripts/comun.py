@@ -34,13 +34,57 @@ def construir_prompt(codigo_vulnerable: str) -> str:
     return PROMPT_PATCHLM.format(question=PREGUNTA, vulnerable=codigo_vulnerable)
 
 
+def _recortar_prosa(bloque: str) -> str | None:
+    """Quita lineas iniciales de prosa hasta que el resto sea Python con al menos una
+    sentencia (un bloque con solo comentarios no cuenta)."""
+    lineas = bloque.strip("\n").splitlines()
+    for i in range(min(len(lineas), 6)):
+        resto = "\n".join(lineas[i:]).strip("\n")
+        if not resto.strip():
+            continue
+        try:
+            if ast.parse(normalizar(resto)).body:
+                return resto
+        except (SyntaxError, ValueError):
+            pass
+    return None
+
+
+_FENCE = re.compile(r"^\s*```.*$", re.M)
+
+
+def segmentos(texto: str, incluir_abierto: bool = False) -> list[str]:
+    """Texto entre cada par de lineas ``` consecutivas.
+
+    No asume que las cercas alternen abrir/cerrar: los modelos a veces abren un bloque,
+    escriben prosa y abren otro. Probar todos los tramos consecutivos resuelve esos casos.
+    """
+    cortes = [m for m in _FENCE.finditer(texto)]
+    segs = [texto[a.end():b.start()] for a, b in zip(cortes, cortes[1:])]
+    if incluir_abierto and cortes:
+        segs.append(texto[cortes[-1].end():])
+    return segs
+
+
+def bloques_cerrados(texto: str) -> list[str]:
+    return segmentos(texto)
+
+
 def extraer_codigo(respuesta: str) -> str:
-    """Toma el primer bloque ```...``` si existe; si no, el texto completo."""
-    m = re.search(r"```(?:[a-zA-Z0-9_+-]*)\n(.*?)(```|$)", respuesta, re.S)
-    codigo = m.group(1) if m else respuesta
-    # Corta si el modelo empieza otra seccion del prompt
-    codigo = re.split(r"\n### ", codigo)[0]
-    return codigo.strip("\n")
+    """Devuelve el primer tramo entre ``` que (quitando prosa inicial) sea Python valido.
+
+    Si ninguno es valido, devuelve el primer tramo (o el texto) tal cual, para que la
+    evaluacion lo cuente como parche invalido.
+    """
+    texto = re.split(r"\n### ", respuesta)[0]
+    candidatos = segmentos(respuesta, incluir_abierto=True)
+    for b in candidatos:
+        limpio = _recortar_prosa(b)
+        if limpio:
+            return limpio
+    if candidatos:
+        return candidatos[0].strip("\n")
+    return texto.strip("\n")
 
 
 def normalizar(codigo: str) -> str:
@@ -53,6 +97,16 @@ def es_valido(codigo: str) -> bool:
         return True
     except (SyntaxError, ValueError):
         return False
+
+
+def nombres_def(codigo: str) -> set[str]:
+    """Nombres de funciones y clases definidas en el fragmento (vacio si no parsea)."""
+    try:
+        arbol = ast.parse(normalizar(codigo))
+    except (SyntaxError, ValueError):
+        return set()
+    return {n.name for n in ast.walk(arbol)
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))}
 
 
 def bandit_ids(codigo: str) -> list[str] | None:

@@ -11,15 +11,34 @@ import time
 from pathlib import Path
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import (AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig,
+                          StoppingCriteria, StoppingCriteriaList)
 
-from comun import RAIZ, cargar_config, construir_prompt, extraer_codigo, leer_jsonl
+from comun import (RAIZ, _recortar_prosa, bloques_cerrados, cargar_config, construir_prompt,
+                   extraer_codigo, leer_jsonl)
+
+
+class CortarTrasCodigo(StoppingCriteria):
+    """Detiene la generacion cuando ya hay un bloque ```...``` cerrado con Python valido.
+
+    Evita gastar tiempo en explicaciones; no cambia el codigo generado (decodificacion voraz).
+    """
+
+    def __init__(self, tok, n_prompt, cada=16):
+        self.tok, self.n_prompt, self.cada, self.paso = tok, n_prompt, cada, 0
+
+    def __call__(self, input_ids, scores, **kw):
+        self.paso += 1
+        if self.paso % self.cada:
+            return False
+        texto = self.tok.decode(input_ids[0][self.n_prompt:], skip_special_tokens=True)
+        return any(_recortar_prosa(b) for b in bloques_cerrados(texto))
 
 
 def cargar_modelo(model_id: str, bits: int):
     kw = {"device_map": "auto"}
     if bits == 16:
-        kw["torch_dtype"] = torch.float16
+        kw["dtype"] = torch.float16
     elif bits == 8:
         kw["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
     elif bits == 4:
@@ -78,6 +97,8 @@ def main():
                     max_new_tokens=cfg["max_new_tokens"],
                     do_sample=False,
                     pad_token_id=tok.eos_token_id,
+                    stopping_criteria=StoppingCriteriaList(
+                        [CortarTrasCodigo(tok, ent["input_ids"].shape[1])]),
                 )
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
