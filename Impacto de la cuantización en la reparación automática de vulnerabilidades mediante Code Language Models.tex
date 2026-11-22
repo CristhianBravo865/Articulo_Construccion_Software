@@ -68,7 +68,24 @@ Este trabajo evalúa el efecto de la cuantización de pesos en la reparación au
 \item \textbf{RQ4:} ¿Los modelos cuantizados reparan los mismos casos que el modelo original?
 \end{itemize}
 
-El resto del artículo se organiza así: la Sección~\ref{sec:trabajos} resume los trabajos relacionados; la Sección~\ref{sec:metodo} describe la metodología; la Sección~\ref{sec:resultados} presenta los resultados; la Sección~\ref{sec:discusion} los discute junto con las amenazas a la validez; y la Sección~\ref{sec:conclusiones} concluye.
+El resto del artículo se organiza así: la Sección~\ref{sec:marco} presenta los conceptos base; la Sección~\ref{sec:trabajos} resume los trabajos relacionados; la Sección~\ref{sec:metodo} describe la metodología; la Sección~\ref{sec:resultados} presenta los resultados; la Sección~\ref{sec:discusion} los discute junto con las amenazas a la validez; y la Sección~\ref{sec:conclusiones} concluye.
+
+% =====================================================================
+\section{Marco teórico}\label{sec:marco}
+
+\comp{Redactar esta sección (aprox. una columna). Debe explicar los conceptos que la Metodología usa sin definir, de forma breve y con cita. No repetir resultados de otros trabajos: eso va en la Sección~\ref{sec:trabajos}.}
+
+\subsection{Reparación automática de vulnerabilidades}
+\comp{Definir vulnerabilidad, CVE y CWE; qué es un parche y la reparación automática de programas \cite{weimer2009genprog}; en qué se diferencia reparar una vulnerabilidad de reparar un error funcional (no basta con pasar pruebas: el parche no debe dejar ni introducir fallas de seguridad).}
+
+\subsection{Code Language Models}
+\comp{Qué es un CLM \cite{jiang2023impact}; modelos con instrucciones; cómo se usan para reparar (\emph{prompt} con el código vulnerable y la respuesta como parche); decodificación voraz frente a muestreo. Presentar brevemente CodeLlama \cite{roziere2023codellama} y Qwen2.5-Coder \cite{hui2024qwen25coder}.}
+
+\subsection{Cuantización de pesos}
+\comp{Idea general: representar los pesos con menos bits mediante un mapeo de reales a enteros \cite{jacob2018quantization} (puede incluirse la ecuación de escala y punto cero). Explicar INT8 con LLM.int8() y su tratamiento de valores atípicos \cite{dettmers2022llmint8}, y NF4 con doble cuantización \cite{dettmers2023qlora}. Mencionar el compromiso memoria--precisión--tiempo de inferencia.}
+
+\subsection{Evaluación de parches}
+\comp{Análisis estático de seguridad: qué hace Bandit (reglas por patrón, identificadas por código, p.~ej. B602) y sus límites \cite{pycqa2026bandit}. Métricas de similitud con la corrección real: CodeBLEU \cite{ren2020codebleu} y ROUGE-L \cite{lin2004rouge}, y por qué el parecido textual no garantiza que la vulnerabilidad desaparezca.}
 
 % =====================================================================
 \section{Trabajos relacionados}\label{sec:trabajos}
@@ -79,7 +96,7 @@ El resto del artículo se organiza así: la Sección~\ref{sec:trabajos} resume l
 \comp{Ampliar lo citado en la Introducción: \cite{wu2023effective,zhang2023pretrained,zhou2025llmvuln,bhandari2025patchlm}. Explicar qué datos y métricas usan; destacar que PatchLM solo mide parecido textual (ROUGE, CodeBLEU) y no comprueba si la vulnerabilidad desaparece.}
 
 \subsection{Cuantización de modelos de código}
-\comp{Explicar INT8 y NF4 \cite{dettmers2022llmint8,dettmers2023qlora} y resumir \cite{giagnorio2025quantizing,vallecillos2026smaller,kusama2025small,haque2025secure}. Cerrar indicando el vacío: ninguno evalúa la seguridad de los parches generados por modelos cuantizados.}
+\comp{Resumir qué modelos, niveles de bits, tareas y hallazgos reporta cada estudio \cite{giagnorio2025quantizing,vallecillos2026smaller,kusama2025small,haque2025secure} (puede ser una tabla comparativa). Cerrar indicando el vacío: ninguno evalúa la seguridad de los parches generados por modelos cuantizados.}
 
 % =====================================================================
 \section{Metodología}\label{sec:metodo}
