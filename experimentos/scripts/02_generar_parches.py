@@ -36,9 +36,12 @@ class CortarTrasCodigo(StoppingCriteria):
 
 
 def cargar_modelo(model_id: str, bits: int):
-    kw = {"device_map": "auto"}
+    # dtype fp16 tambien en 8 y 4 bits: las capas no cuantizadas (embeddings, normas, lm_head)
+    # quedarian en bfloat16 por defecto (config del modelo), que la T4 no soporta en hardware:
+    # cada matmul se convierte bf16->fp16 y la generacion se vuelve muy lenta.
+    kw = {"device_map": "auto", "dtype": torch.float16}
     if bits == 16:
-        kw["dtype"] = torch.float16
+        pass
     elif bits == 8:
         kw["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
     elif bits == 4:
