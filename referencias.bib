@@ -1,28 +1,37 @@
 % ============================================================
-% Referencias de la Introducción (formato BibTeX para IEEEtran)
-% Los campos marcados con "VERIFICAR" deben completarse con el PDF / la página de la editorial.
+% Referencias en formato BibTeX para IEEEtran (estilo de la plantilla IEEE de conferencia):
+% - Títulos en tipo oración (solo la primera palabra y los nombres propios en mayúscula).
+% - Preprints de arXiv como @misc con "arXiv:XXXX" y URL, como en la plantilla.
+% - Pendientes de verificar (en comentarios, para que no salgan en el PDF):
+%   * zhang2023pretrained: ¿versión publicada en IEEE Trans. Dependable Secure Comput.?
+%   * zhou2025llmvuln: volumen y número en ACM TOSEM.
+%   * wu2023effective y jacob2018quantization: páginas.
+%   * bhandari2025patchlm: volumen de Information and Software Technology.
+%   * giagnorio2025quantizing: ¿ya tiene versión publicada?
 % ============================================================
+
+% ---------------- Introducción ----------------
 
 @misc{nist2026nvd,
   author       = {{National Institute of Standards and Technology}},
-  title        = {{NIST} Updates {NVD} Operations to Address Record {CVE} Growth},
-  year         = {2026},
+  title        = {{NIST} updates {NVD} operations to address record {CVE} growth},
   month        = apr,
-  howpublished = {\url{https://www.nist.gov/news-events/news/2026/04/nist-updates-nvd-operations-address-record-cve-growth}},
-  note         = {Accedido: 20 oct. 2026}
+  year         = {2026},
+  note         = {Accedido: 20 oct. 2026},
+  url          = {https://www.nist.gov/news-events/news/2026/04/nist-updates-nvd-operations-address-record-cve-growth}
 }
 
-@article{zhang2023pretrained,
-  author  = {Zhang, Quanjun and Fang, Chunrong and Yu, Bowen and Sun, Weisong and Zhang, Tongke and Chen, Zhenyu},
-  title   = {Pre-trained Model-based Automated Software Vulnerability Repair: How Far are We?},
-  journal = {arXiv preprint arXiv:2308.12533},
-  year    = {2023},
-  note    = {VERIFICAR: posible versión publicada en IEEE Trans. Dependable Secure Comput.}
+@misc{zhang2023pretrained,
+  author = {Zhang, Quanjun and Fang, Chunrong and Yu, Bowen and Sun, Weisong and Zhang, Tongke and Chen, Zhenyu},
+  title  = {Pre-trained model-based automated software vulnerability repair: {H}ow far are we?},
+  year   = {2023},
+  note   = {arXiv:2308.12533},
+  url    = {https://arxiv.org/abs/2308.12533}
 }
 
 @inproceedings{weimer2009genprog,
   author    = {Weimer, Westley and Nguyen, ThanhVu and Le Goues, Claire and Forrest, Stephanie},
-  title     = {Automatically Finding Patches Using Genetic Programming},
+  title     = {Automatically finding patches using genetic programming},
   booktitle = {Proc. 31st Int. Conf. Softw. Eng. (ICSE)},
   pages     = {364--374},
   year      = {2009},
@@ -31,7 +40,7 @@
 
 @inproceedings{jiang2023impact,
   author    = {Jiang, Nan and Liu, Kevin and Lutellier, Thibaud and Tan, Lin},
-  title     = {Impact of Code Language Models on Automated Program Repair},
+  title     = {Impact of code language models on automated program repair},
   booktitle = {Proc. IEEE/ACM 45th Int. Conf. Softw. Eng. (ICSE)},
   pages     = {1434--1446},
   year      = {2023},
@@ -40,87 +49,84 @@
 
 @article{zhou2025llmvuln,
   author  = {Zhou, Xin and Cao, Sicong and Sun, Xiaobing and Lo, David},
-  title   = {Large Language Model for Vulnerability Detection and Repair: Literature Review and the Road Ahead},
+  title   = {Large language model for vulnerability detection and repair: {L}iterature review and the road ahead},
   journal = {ACM Trans. Softw. Eng. Methodol.},
   year    = {2025},
-  doi     = {10.1145/3708522},
-  note    = {VERIFICAR volumen y número}
+  doi     = {10.1145/3708522}
 }
 
 @inproceedings{wu2023effective,
   author    = {Wu, Yi and Jiang, Nan and Pham, Hung Viet and Lutellier, Thibaud and Davis, Jordan and Tan, Lin and Babkin, Petr and Shah, Sameena},
-  title     = {How Effective Are Neural Networks for Fixing Security Vulnerabilities},
+  title     = {How effective are neural networks for fixing security vulnerabilities},
   booktitle = {Proc. 32nd ACM SIGSOFT Int. Symp. Softw. Testing Anal. (ISSTA)},
   year      = {2023},
-  doi       = {10.1145/3597926.3598135},
-  note      = {VERIFICAR páginas}
+  doi       = {10.1145/3597926.3598135}
 }
 
 @article{bhandari2025patchlm,
   author  = {Bhandari, Guru and Gavric, Nikola and Shalaginov, Andrii},
-  title   = {Generating Vulnerability Security Fixes with Code Language Models},
-  journal = {Information and Software Technology},
-  year    = {2025},
+  title   = {Generating vulnerability security fixes with code language models},
+  journal = {Inf. Softw. Technol.},
   pages   = {107786},
-  doi     = {10.1016/j.infsof.2025.107786},
-  note    = {VERIFICAR volumen}
+  year    = {2025},
+  doi     = {10.1016/j.infsof.2025.107786}
 }
 
-@article{giagnorio2025quantizing,
-  author  = {Giagnorio, Alessandro and Mastropaolo, Antonio and Afrin, Saima and Di Penta, Massimiliano and Bavota, Gabriele},
-  title   = {Quantizing Large Language Models for Code Generation: A Differentiated Replication},
-  journal = {arXiv preprint arXiv:2503.07103},
-  year    = {2025},
-  note    = {VERIFICAR si ya tiene versión publicada}
+@misc{giagnorio2025quantizing,
+  author = {Giagnorio, Alessandro and Mastropaolo, Antonio and Afrin, Saima and Di Penta, Massimiliano and Bavota, Gabriele},
+  title  = {Quantizing large language models for code generation: {A} differentiated replication},
+  year   = {2025},
+  note   = {arXiv:2503.07103},
+  url    = {https://arxiv.org/abs/2503.07103}
 }
 
 @inproceedings{jacob2018quantization,
   author    = {Jacob, Benoit and Kligys, Skirmantas and Chen, Bo and Zhu, Menglong and Tang, Matthew and Howard, Andrew and Adam, Hartwig and Kalenichenko, Dmitry},
-  title     = {Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference},
+  title     = {Quantization and training of neural networks for efficient integer-arithmetic-only inference},
   booktitle = {Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)},
   year      = {2018},
-  doi       = {10.1109/CVPR.2018.00286},
-  note      = {VERIFICAR páginas}
+  doi       = {10.1109/CVPR.2018.00286}
 }
 
-@article{vallecillos2026smaller,
-  author  = {Vallecillos-Ruiz, Fernando and d'Aloisio, Giordano and Hort, Max and Traini, Luca and Di Marco, Antinisca and Moonen, Leon},
-  title   = {Smaller Models, Unexpected Costs: Trade-offs in {LLM} Quantization for Automated Program Repair},
-  journal = {arXiv preprint arXiv:2606.27205},
-  year    = {2026}
+@misc{vallecillos2026smaller,
+  author = {Vallecillos-Ruiz, Fernando and d'Aloisio, Giordano and Hort, Max and Traini, Luca and Di Marco, Antinisca and Moonen, Leon},
+  title  = {Smaller models, unexpected costs: {T}rade-offs in {LLM} quantization for automated program repair},
+  year   = {2026},
+  note   = {arXiv:2606.27205},
+  url    = {https://arxiv.org/abs/2606.27205}
 }
 
-@article{kusama2025small,
-  author  = {Kusama, Kazuki and Shu, Honglin and Kondo, Masanari and Kamei, Yasutaka},
-  title   = {How Small is Enough? Empirical Evidence of Quantized Small Language Models for Automated Program Repair},
-  journal = {arXiv preprint arXiv:2508.16499},
-  year    = {2025}
+@misc{kusama2025small,
+  author = {Kusama, Kazuki and Shu, Honglin and Kondo, Masanari and Kamei, Yasutaka},
+  title  = {How small is enough? {E}mpirical evidence of quantized small language models for automated program repair},
+  year   = {2025},
+  note   = {arXiv:2508.16499},
+  url    = {https://arxiv.org/abs/2508.16499}
 }
 
-@article{haque2025secure,
-  author  = {Haque, Md Nazmul and Lin, Elizabeth and Arkoh, Lawrence and Tadesse, Biruk and Xu, Bowen},
-  title   = {Secure or Suspect? Investigating Package Hallucinations of Shell Command in Original and Quantized {LLMs}},
-  journal = {arXiv preprint arXiv:2512.08213},
-  year    = {2025}
+@misc{haque2025secure,
+  author = {Haque, Md Nazmul and Lin, Elizabeth and Arkoh, Lawrence and Tadesse, Biruk and Xu, Bowen},
+  title  = {Secure or suspect? {I}nvestigating package hallucinations of shell command in original and quantized {LLMs}},
+  year   = {2025},
+  note   = {arXiv:2512.08213},
+  url    = {https://arxiv.org/abs/2512.08213}
 }
 
-% ============================================================
-% Referencias de Metodología (agregadas 22 nov. 2026)
-% ============================================================
+% ---------------- Metodología ----------------
 
 @misc{bhandari2024fixme,
   author       = {Bhandari, Guru Prasad},
-  title        = {{FixMe}: An Incremental Lightweight Method for Vulnerability Data Collection for Security Patch Prediction},
-  year         = {2024},
+  title        = {{FixMe}: {A}n incremental lightweight method for vulnerability data collection for security patch prediction},
+  howpublished = {Zenodo},
   month        = may,
-  publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.10955342},
-  howpublished = {Conjunto de datos, versión v1}
+  year         = {2024},
+  note         = {DOI: 10.5281/zenodo.10955342},
+  url          = {https://zenodo.org/records/10955342}
 }
 
 @inproceedings{siddiq2022securityeval,
   author    = {Siddiq, Mohammed Latif and Santos, Joanna C. S.},
-  title     = {{SecurityEval} Dataset: Mining Vulnerability Examples to Evaluate Machine Learning-Based Code Generation Techniques},
+  title     = {{SecurityEval} dataset: {M}ining vulnerability examples to evaluate machine learning-based code generation techniques},
   booktitle = {Proc. 1st Int. Workshop Mining Softw. Repositories Appl. Privacy Secur. (MSR4P\&S)},
   year      = {2022},
   doi       = {10.1145/3549035.3561184}
@@ -128,60 +134,61 @@
 
 @misc{pycqa2026bandit,
   author       = {{PyCQA}},
-  title        = {Bandit: A Tool Designed to Find Common Security Issues in {Python} Code},
+  title        = {Bandit: {A} tool designed to find common security issues in {Python} code},
+  howpublished = {GitHub repository, versión 1.9.4},
   year         = {2026},
-  howpublished = {\url{https://github.com/PyCQA/bandit}},
-  note         = {Versión 1.9.4}
+  url          = {https://github.com/PyCQA/bandit}
 }
 
-@article{roziere2023codellama,
-  author  = {Rozi\`{e}re, Baptiste and others},
-  title   = {Code {Llama}: Open Foundation Models for Code},
-  journal = {arXiv preprint arXiv:2308.12950},
-  year    = {2023}
+@misc{roziere2023codellama,
+  author = {Rozi\`{e}re, Baptiste and others},
+  title  = {Code {Llama}: {O}pen foundation models for code},
+  year   = {2023},
+  note   = {arXiv:2308.12950},
+  url    = {https://arxiv.org/abs/2308.12950}
 }
 
-@article{hui2024qwen25coder,
-  author  = {Hui, Binyuan and others},
-  title   = {{Qwen2.5-Coder} Technical Report},
-  journal = {arXiv preprint arXiv:2409.12186},
-  year    = {2024}
+@misc{hui2024qwen25coder,
+  author = {Hui, Binyuan and others},
+  title  = {{Qwen2.5-Coder} technical report},
+  year   = {2024},
+  note   = {arXiv:2409.12186},
+  url    = {https://arxiv.org/abs/2409.12186}
 }
 
 @inproceedings{dettmers2022llmint8,
   author    = {Dettmers, Tim and Lewis, Mike and Belkada, Younes and Zettlemoyer, Luke},
-  title     = {{LLM.int8()}: 8-bit Matrix Multiplication for Transformers at Scale},
-  booktitle = {Adv. Neural Inf. Process. Syst. (NeurIPS)},
-  year      = {2022},
-  note      = {arXiv:2208.07339}
+  title     = {{LLM.int8()}: 8-bit matrix multiplication for transformers at scale},
+  booktitle = {Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  year      = {2022}
 }
 
 @inproceedings{dettmers2023qlora,
   author    = {Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
-  title     = {{QLoRA}: Efficient Finetuning of Quantized {LLMs}},
-  booktitle = {Adv. Neural Inf. Process. Syst. (NeurIPS)},
-  year      = {2023},
-  note      = {arXiv:2305.14314}
+  title     = {{QLoRA}: {E}fficient finetuning of quantized {LLMs}},
+  booktitle = {Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+  year      = {2023}
 }
 
-@article{ren2020codebleu,
-  author  = {Ren, Shuo and others},
-  title   = {{CodeBLEU}: A Method for Automatic Evaluation of Code Synthesis},
-  journal = {arXiv preprint arXiv:2009.10297},
-  year    = {2020}
+@misc{ren2020codebleu,
+  author = {Ren, Shuo and others},
+  title  = {{CodeBLEU}: {A} method for automatic evaluation of code synthesis},
+  year   = {2020},
+  note   = {arXiv:2009.10297},
+  url    = {https://arxiv.org/abs/2009.10297}
 }
 
 @inproceedings{lin2004rouge,
   author    = {Lin, Chin-Yew},
-  title     = {{ROUGE}: A Package for Automatic Evaluation of Summaries},
-  booktitle = {Text Summarization Branches Out (ACL Workshop)},
+  title     = {{ROUGE}: {A} package for automatic evaluation of summaries},
+  booktitle = {Text Summarization Branches Out},
   pages     = {74--81},
   year      = {2004}
 }
 
 @article{mcnemar1947note,
   author  = {McNemar, Quinn},
-  title   = {Note on the Sampling Error of the Difference Between Correlated Proportions or Percentages},
+  title   = {Note on the sampling error of the difference between correlated proportions or percentages},
   journal = {Psychometrika},
   volume  = {12},
   number  = {2},
@@ -192,7 +199,7 @@
 
 @article{wilcoxon1945individual,
   author  = {Wilcoxon, Frank},
-  title   = {Individual Comparisons by Ranking Methods},
+  title   = {Individual comparisons by ranking methods},
   journal = {Biometrics Bulletin},
   volume  = {1},
   number  = {6},
