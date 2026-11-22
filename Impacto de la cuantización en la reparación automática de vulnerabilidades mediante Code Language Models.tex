@@ -9,6 +9,13 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage[spanish,es-nodecimaldot,es-tabla]{babel}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+% Marcas de trabajo (borrar antes de entregar)
+\newcommand{\pend}[1]{\textcolor{red}{[Pendiente: #1]}}
+\newcommand{\comp}[1]{\textcolor{blue}{[Compañero: #1]}}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -34,11 +41,12 @@ email address or ORCID}
 \maketitle
 
 \begin{abstract}
-a
+% Borrador: cerrar cuando estén los resultados de CodeLlama-7B.
+Los \emph{Code Language Models} (CLM) se usan para reparar vulnerabilidades de forma automática, pero su consumo de memoria lleva a cuantizarlos sin evaluar el efecto en la seguridad de los parches. Este trabajo mide cómo la cuantización de pesos a 8 bits (INT8) y a 4 bits (NF4) afecta la reparación de vulnerabilidades en Python, en comparación con la precisión de 16 bits. Se evaluaron CodeLlama-7B-Instruct, modelo base de PatchLM, y Qwen2.5-Coder-1.5B-Instruct en dos conjuntos: 150 fragmentos de correcciones de CVE reales (FixMe) y 49 funciones inseguras de SecurityEval, con Bandit como oráculo de seguridad. Con el modelo de 1,5B, 8 bits no cambió la calidad de los parches, pero redujo la memoria un 42\,\% y multiplicó por 4,3 el tiempo por token. En cambio, 4 bits redujo la memoria un 63\,\% y bajó de forma significativa el parecido con la corrección real (CodeBLEU $-10$\,\%, ROUGE-L $-19$\,\%). Además, a 4 bits la mitad de los hallazgos ``eliminados'' se debió a parches que borraban la función vulnerable. \pend{resultados de CodeLlama-7B y conclusión principal}.
 \end{abstract}
 
 \begin{IEEEkeywords}
-palabras clave
+reparación automática de vulnerabilidades, cuantización, modelos de lenguaje de código, análisis estático, eficiencia
 \end{IEEEkeywords}
 
 \section{Introducción}
@@ -47,9 +55,216 @@ Según el NIST, el número de vulnerabilidades reportadas al sistema CVE creció
 
 En los últimos años, los CLM se han consolidado como una línea de investigación activa en seguridad de software: una revisión sistemática reciente reúne 58 estudios que los aplican a la detección y reparación de vulnerabilidades~\cite{zhou2025llmvuln}. No obstante, su efectividad en casos reales aún es limitada; en vulnerabilidades de Java, el mejor modelo evaluado corrigió apenas el 20,4\,\% de los casos, aunque el ajuste fino mejoró sus resultados~\cite{wu2023effective}. Siguiendo esta dirección, Bhandari et al.~\cite{bhandari2025patchlm} propusieron PatchLM, un CLM ajustado con correcciones de vulnerabilidades registradas como CVE, que superó a los modelos base CodeT5 y CodeLlama. Sin embargo, estos modelos demandan una gran cantidad de memoria: por ejemplo, DeepSeek-Coder de 33\,000 millones de parámetros requiere alrededor de 64\,GB de memoria de GPU~\cite{giagnorio2025quantizing}. Por ello se recurre a la cuantización, que representa los pesos del modelo con menos bits mediante un mapeo de números reales a enteros, tal como lo formalizaron Jacob et al.~\cite{jacob2018quantization}. En generación de código, Giagnorio et al.~\cite{giagnorio2025quantizing} mostraron que es posible bajar hasta 4 bits sin pérdida significativa y con cerca de 70\,\% menos de memoria, aunque con 3 y 2 bits el rendimiento cae de forma notable.
 
-Sin embargo, el rendimiento de los CLM cuantizados en la reparación de programas ha sido poco evaluado, y los estudios disponibles se centran en errores funcionales~\cite{vallecillos2026smaller,kusama2025small}. Entre ellos, Vallecillos-Ruiz et al.~\cite{vallecillos2026smaller} observaron que los modelos cuantizados corrigen una cantidad similar de errores que los originales, pero no los mismos, y que la reducción de memoria, de hasta 85\,\%, se acompaña de un mayor tiempo de inferencia y consumo energético. Este cambio de comportamiento cobra relevancia en seguridad, donde se ha reportado que la cuantización a 4 bits incrementa la proporción de dependencias vulnerables recomendadas por el modelo~\cite{haque2025secure}. Pese a ello, en PatchLM~\cite{bhandari2025patchlm} el modelo CodeLlama se cuantizó a 4 bits por limitaciones de recursos, sin evaluar el efecto de esta decisión. Hasta donde sabemos, no existe un estudio que analice cómo la cuantización afecta la capacidad de los CLM para eliminar vulnerabilidades, la posible introducción de vulnerabilidades nuevas y el costo computacional de la reparación.
+Sin embargo, el rendimiento de los CLM cuantizados en la reparación de programas ha sido poco evaluado, y los estudios disponibles se centran en errores funcionales~\cite{vallecillos2026smaller,kusama2025small}. Entre ellos, Vallecillos-Ruiz et al.~\cite{vallecillos2026smaller} observaron que los modelos cuantizados corrigen una cantidad similar de errores que los originales, pero no los mismos, y que la reducción de memoria, de hasta 85\,\%, se acompaña de un mayor tiempo de inferencia y consumo energético. Este cambio de comportamiento cobra relevancia en seguridad, donde se ha reportado que la cuantización a 4 bits incrementa la proporción de dependencias vulnerables recomendadas por el modelo~\cite{haque2025secure}. % VERIFICAR con el PDF de PatchLM (sección y frase exactas): en su repositorio publicado,
+% config.yaml tiene use_4bit_quantization: False, aunque hay una ruta a un modelo de 4 bits.
+Pese a ello, en PatchLM~\cite{bhandari2025patchlm} el modelo CodeLlama se cuantizó a 4 bits por limitaciones de recursos, sin evaluar el efecto de esta decisión. Hasta donde sabemos, no existe un estudio que analice cómo la cuantización afecta la capacidad de los CLM para eliminar vulnerabilidades, la posible introducción de vulnerabilidades nuevas y el costo computacional de la reparación.
 
-% --- Párrafo 4 (propósito, método y objetivo) y hoja de ruta: pendientes ---
+Este trabajo evalúa el efecto de la cuantización de pesos en la reparación automática de vulnerabilidades. Como los pesos ajustados de PatchLM no están publicados, se cuantiza su modelo base, CodeLlama-7B-Instruct, y se le presenta la tarea con el mismo \emph{prompt} de evaluación de PatchLM. Además, se incluye un modelo pequeño, Qwen2.5-Coder-1.5B-Instruct, que puede ejecutarse en una GPU de consumo de 4\,GB. Cada modelo se evalúa con precisión de 16 bits (FP16), 8 bits (INT8) y 4 bits (NF4). La evaluación usa dos conjuntos de datos complementarios: fragmentos de correcciones reales de CVE, para comparar con PatchLM, y funciones inseguras en las que un analizador estático confirma la vulnerabilidad, para medir si el parche la elimina. Concretamente, se responden cuatro preguntas de investigación:
+
+\begin{itemize}
+\item \textbf{RQ1:} ¿La cuantización reduce la capacidad del modelo para eliminar la vulnerabilidad?
+\item \textbf{RQ2:} ¿La cuantización hace que el modelo introduzca vulnerabilidades nuevas?
+\item \textbf{RQ3:} ¿Cuánta memoria y tiempo de inferencia ahorra la cuantización?
+\item \textbf{RQ4:} ¿Los modelos cuantizados reparan los mismos casos que el modelo original?
+\end{itemize}
+
+El resto del artículo se organiza así: la Sección~\ref{sec:trabajos} resume los trabajos relacionados; la Sección~\ref{sec:metodo} describe la metodología; la Sección~\ref{sec:resultados} presenta los resultados; la Sección~\ref{sec:discusion} los discute junto con las amenazas a la validez; y la Sección~\ref{sec:conclusiones} concluye.
+
+% =====================================================================
+\section{Trabajos relacionados}\label{sec:trabajos}
+
+\comp{Redactar esta sección (aprox. media columna a una columna). Estructura sugerida:}
+
+\subsection{Reparación de vulnerabilidades con CLM}
+\comp{Ampliar lo citado en la Introducción: \cite{wu2023effective,zhang2023pretrained,zhou2025llmvuln,bhandari2025patchlm}. Explicar qué datos y métricas usan; destacar que PatchLM solo mide parecido textual (ROUGE, CodeBLEU) y no comprueba si la vulnerabilidad desaparece.}
+
+\subsection{Cuantización de modelos de código}
+\comp{Explicar INT8 y NF4 \cite{dettmers2022llmint8,dettmers2023qlora} y resumir \cite{giagnorio2025quantizing,vallecillos2026smaller,kusama2025small,haque2025secure}. Cerrar indicando el vacío: ninguno evalúa la seguridad de los parches generados por modelos cuantizados.}
+
+% =====================================================================
+\section{Metodología}\label{sec:metodo}
+
+El código, los datos procesados y los resultados del estudio están disponibles en el repositorio del proyecto\footnote{\url{https://github.com/CristhianBravo865/Articulo_Construccion_Software}, carpeta \texttt{experimentos}.}.
+
+\subsection{Modelos y niveles de cuantización}
+
+Se evaluaron dos modelos con instrucciones (Tabla~\ref{tab:config}). CodeLlama-7B-Instruct~\cite{roziere2023codellama} es el modelo base que PatchLM ajusta~\cite{bhandari2025patchlm}; al usarlo sin ajuste fino, el estudio mide el efecto de la cuantización sobre el mismo modelo y la misma tarea, pero no sobre PatchLM. Qwen2.5-Coder-1.5B-Instruct~\cite{hui2024qwen25coder} representa el caso de uso que motiva la cuantización: un modelo pequeño que se ejecuta en una computadora personal.
+
+Todas las configuraciones se cargaron con la biblioteca \texttt{bitsandbytes} a través de \texttt{transformers}, para que la única variable fuera el número de bits. La línea base usa FP16. La configuración de 8 bits usa LLM.int8()~\cite{dettmers2022llmint8}, y la de 4 bits usa el formato NF4 con doble cuantización y cómputo en FP16~\cite{dettmers2023qlora}.
+
+\begin{table}[htbp]
+\caption{Configuraciones evaluadas}
+\label{tab:config}
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Id} & \textbf{Modelo} & \textbf{Precisión} & \textbf{GPU} \\
+\midrule
+L-16 & CodeLlama-7B & FP16 (base) & \multirow{3}{*}{T4 (16\,GB)} \\
+L-8  & CodeLlama-7B & INT8 & \\
+L-4  & CodeLlama-7B & NF4 & \\
+\midrule
+Q-16 & Qwen2.5-Coder-1.5B & FP16 (base) & \multirow{3}{*}{RTX 3050 (4\,GB)} \\
+Q-8  & Qwen2.5-Coder-1.5B & INT8 & \\
+Q-4  & Qwen2.5-Coder-1.5B & NF4 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Conjuntos de datos}
+
+Se construyeron dos experimentos con los mismos modelos y configuraciones (Tabla~\ref{tab:datos}).
+
+\textbf{E1 (CVE reales).} Se usó FixMe~\cite{bhandari2024fixme}, el conjunto de correcciones de CVE del mismo grupo que propuso PatchLM. FixMe guarda los cambios por \emph{hunk} (fragmento de un \emph{diff}), con su versión anterior y posterior. Se tomaron los \emph{hunks} de Python en los que ambas versiones son sintácticamente válidas y distintas, y cuya versión vulnerable tiene como máximo 1500 caracteres. De ellos se extrajo una muestra aleatoria de 150 casos (semilla 42). En E1 se compara el parche con la corrección real, como en PatchLM.
+
+\textbf{E2 (oráculo de seguridad).} En E1, Bandit~\cite{pycqa2026bandit} detecta algún hallazgo en solo 5 de las 150 versiones vulnerables, porque la mayoría de los CVE son errores lógicos (validaciones o permisos) que un analizador de patrones no reconoce. Por ello se añadió SecurityEval~\cite{siddiq2022securityeval}, un conjunto de funciones Python inseguras organizadas por CWE. Se conservaron las 49 funciones, de las 121 de la versión actual, en las que Bandit reporta al menos un hallazgo. En E2 se comprueba si el parche elimina ese hallazgo.
+
+Se eligió Python, y no Java como PatchLM, porque Bandit puede analizar funciones sueltas sin compilar el proyecto.
+
+\begin{table}[htbp]
+\caption{Construcción de los conjuntos de datos}
+\label{tab:datos}
+\centering
+\begin{tabular}{lr}
+\toprule
+\textbf{Paso} & \textbf{Casos} \\
+\midrule
+\multicolumn{2}{l}{\textit{E1: FixMe}} \\
+\emph{Hunks} de Python & 1627 \\
+Versiones válidas y distintas & 588 \\
+Versión vulnerable de hasta 1500 caracteres & 583 \\
+Muestra aleatoria & \textbf{150} \\
+\midrule
+\multicolumn{2}{l}{\textit{E2: SecurityEval}} \\
+Funciones inseguras & 121 \\
+Con hallazgo de Bandit & \textbf{49} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Generación de parches}
+
+Cada caso se presentó con el \emph{prompt} de evaluación publicado en el repositorio de PatchLM, que incluye el código vulnerable y pide su versión corregida. A diferencia de PatchLM, que genera por muestreo, se usó decodificación voraz con un máximo de 512 tokens nuevos. Así, cada configuración produce una sola respuesta reproducible, y las diferencias entre configuraciones no se deben al azar. La generación se detiene cuando la respuesta contiene un bloque de código cerrado con Python válido. Como la decodificación es voraz, esta regla solo evita generar la explicación posterior y no cambia el código. El parche es el primer bloque de código de la respuesta que resulta Python válido tras quitar hasta seis líneas iniciales de texto.
+
+\subsection{Métricas}
+
+Cada parche se evaluó con las siguientes métricas:
+
+\begin{itemize}
+\item \textbf{Cambio válido:} el parche es Python sintácticamente válido, no está vacío, no es idéntico al código vulnerable y conserva las funciones y clases que este definía. La última condición evita contar como reparación una respuesta que borra la función.
+\item \textbf{Hallazgo eliminado} (E2): ninguno de los hallazgos de Bandit del código vulnerable, identificados por su código de regla, aparece en el parche.
+\item \textbf{Hallazgo introducido} (E1 y E2): el parche tiene algún hallazgo de Bandit que no estaba en el código vulnerable.
+\item \textbf{Reparación segura} (E2): cambio válido, hallazgo eliminado y ningún hallazgo introducido. Es la métrica principal de RQ1. Se reporta también una variante que ignora los avisos por importar un módulo (reglas B4xx de Bandit), que persisten aunque el uso inseguro se haya corregido.
+\item \textbf{CodeBLEU y ROUGE-L} (E1): parecido entre el parche y la corrección real, las mismas métricas de PatchLM. CodeBLEU~\cite{ren2020codebleu} usa pesos de 0,25 para cada componente, y ROUGE-L~\cite{lin2004rouge} es la medida F.
+\end{itemize}
+
+\subsection{Costo computacional}
+
+En la generación de parches, el tiempo depende de cuánto escribe cada configuración, por lo que no sirve para comparar costos. Para RQ3 se hizo una medición controlada: 10 \emph{prompts} (5 de E1 y 5 de E2), exactamente 128 tokens generados por \emph{prompt}, una ejecución de calentamiento y tres repeticiones. Se reporta el tiempo medio por token, la memoria de GPU que ocupa el modelo cargado y la memoria pico durante la generación.
+
+\subsection{Análisis estadístico}
+
+Cada configuración cuantizada se compara con la línea base FP16 del mismo modelo sobre los mismos casos. Para las métricas binarias se usa la prueba exacta de McNemar~\cite{mcnemar1947note}, y para CodeBLEU y ROUGE-L, la prueba de rangos con signo de Wilcoxon~\cite{wilcoxon1945individual}, ambas pareadas y con $\alpha = 0{,}05$. Para RQ4 se calcula el índice de Jaccard entre los conjuntos de casos resueltos por cada configuración.
+
+El entorno de software fue PyTorch 2.6.0, transformers 5.20.2, bitsandbytes 0.50.2 y Bandit 1.9.4.
+
+% =====================================================================
+\section{Resultados}\label{sec:resultados}
+
+La Tabla~\ref{tab:calidad} resume la calidad de los parches y la Tabla~\ref{tab:costo}, el costo. \pend{completar las columnas de CodeLlama-7B (corrida en Kaggle) y revisar el texto de esta sección con esos datos}.
+
+\begin{table*}[htbp]
+\caption{Calidad de los parches. * Diferencia significativa frente a FP16 del mismo modelo ($p < 0{,}05$)}
+\label{tab:calidad}
+\centering
+\begin{tabular}{llcccccc}
+\toprule
+& & \multicolumn{3}{c}{\textbf{Qwen2.5-Coder-1.5B}} & \multicolumn{3}{c}{\textbf{CodeLlama-7B}} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+\textbf{Exp.} & \textbf{Métrica} & \textbf{FP16} & \textbf{INT8} & \textbf{NF4} & \textbf{FP16} & \textbf{INT8} & \textbf{NF4} \\
+\midrule
+\multirow{4}{*}{E1 (n = 150)} & CodeBLEU (media) & 0,568 & 0,568 & 0,509* & -- & -- & -- \\
+& ROUGE-L (media) & 0,590 & 0,582 & 0,481* & -- & -- & -- \\
+& Cambio válido (\%) & 74,0 & 70,0 & 73,3 & -- & -- & -- \\
+& Hallazgo introducido (\%) & 0,7 & 0,7 & 0,7 & -- & -- & -- \\
+\midrule
+\multirow{5}{*}{E2 (n = 49)} & Cambio válido (\%) & 83,7 & 83,7 & 71,4 & -- & -- & -- \\
+& Hallazgo eliminado (\%) & 16,3 & 16,3 & 24,5 & -- & -- & -- \\
+& Reparación segura (\%) & 12,2 & 12,2 & 10,2 & -- & -- & -- \\
+& Reparación segura sin B4xx (\%) & 13,0 & 13,0 & 10,9 & -- & -- & -- \\
+& Hallazgo introducido (\%) & 6,1 & 6,1 & 4,1 & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{RQ1: eliminación de la vulnerabilidad}
+
+Con Qwen2.5-Coder-1.5B, la configuración de 8 bits no se distinguió de FP16: CodeBLEU ($p = 0{,}38$) y ROUGE-L ($p = 0{,}23$) no cambiaron de forma significativa, y en E2 ambas configuraciones produjeron exactamente los mismos resultados. En cambio, 4 bits redujo de forma significativa el parecido con la corrección real: CodeBLEU bajó de 0,568 a 0,509 ($p = 0{,}020$) y ROUGE-L, de 0,590 a 0,481 ($p = 0{,}002$).
+
+En E2, la tasa de reparación segura fue baja aun en FP16 (12,2\,\%), y la diferencia con 4 bits (10,2\,\%) no fue significativa ($p = 1{,}00$). En 34 de los 49 casos, el parche del modelo en FP16 conservó el mismo hallazgo de Bandit; en 7 de ellos, el modelo devolvió el código sin cambios. Con tan pocos casos reparados, la prueba tiene poca potencia para detectar diferencias.
+
+La métrica de hallazgo eliminado muestra por qué no basta con el analizador estático. A 4 bits, esta tasa subió de 16,3\,\% a 24,5\,\%, lo que sugeriría una mejora. Sin embargo, 6 de esas 12 eliminaciones correspondían a respuestas que no conservaban la función original, es decir, el hallazgo desapareció porque el modelo borró el código. Por la misma razón, el cambio válido bajó de 83,7\,\% a 71,4\,\% ($p = 0{,}070$).
+
+\pend{resultados de CodeLlama-7B para RQ1}
+
+\subsection{RQ2: introducción de vulnerabilidades}
+
+Con Qwen2.5-Coder-1.5B no se observó que la cuantización introdujera más vulnerabilidades. En E1, la tasa fue de 0,7\,\% (un caso) en las tres configuraciones, y en E2 fue de 6,1\,\% en FP16 e INT8 y de 4,1\,\% en NF4 ($p = 1{,}00$). Estos eventos son tan escasos que el resultado no permite descartar un efecto pequeño. \pend{resultados de CodeLlama-7B para RQ2}
+
+\subsection{RQ3: costo computacional}
+
+\begin{table}[htbp]
+\caption{Costo de inferencia (128 tokens, 10 \emph{prompts}, 3 repeticiones)}
+\label{tab:costo}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Config.} & \textbf{Memoria del} & \textbf{Memoria} & \textbf{ms/token} \\
+ & \textbf{modelo (MiB)} & \textbf{pico (MiB)} & \\
+\midrule
+Q-16 & 2944 & 2968 & 43,5 $\pm$ 0,7 \\
+Q-8  & 1702 ($-$42\,\%) & 1733 & 188,7 $\pm$ 1,3 \\
+Q-4  & 1100 ($-$63\,\%) & 1150 & 61,1 $\pm$ 0,6 \\
+\midrule
+L-16 & -- & -- & -- \\
+L-8  & -- & -- & -- \\
+L-4  & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La cuantización redujo la memoria del modelo un 42\,\% a 8 bits y un 63\,\% a 4 bits, pero ninguna configuración fue más rápida que FP16. A 8 bits, cada token tardó 4,3 veces más que en FP16, y a 4 bits, 1,4 veces más. Esto coincide con lo reportado por Vallecillos-Ruiz et al.~\cite{vallecillos2026smaller}: menos memoria no implica menos tiempo de inferencia. \pend{costo de CodeLlama-7B en la T4}
+
+\subsection{RQ4: coincidencia de los casos resueltos}
+
+Con Qwen2.5-Coder-1.5B, la configuración de 8 bits resolvió casi los mismos casos que FP16: el índice de Jaccard de los cambios válidos en E1 fue 0,91, y en E2 las reparaciones seguras coincidieron por completo. A 4 bits, la coincidencia bajó a 0,75 en E1 y a 0,57 en E2: de las 7 reparaciones seguras que logró alguna de las dos configuraciones, solo 4 fueron comunes. Es decir, aunque la tasa total es parecida, el modelo de 4 bits no repara los mismos casos, como observaron Vallecillos-Ruiz et al.~\cite{vallecillos2026smaller} con errores funcionales. \pend{CodeLlama-7B}
+
+% =====================================================================
+\section{Discusión}\label{sec:discusion}
+
+\comp{Redactar cuando estén los resultados de CodeLlama-7B. Puntos a discutir:
+(1) INT8 conserva la calidad, pero en estas GPU es más lento: ¿cuándo conviene?;
+(2) NF4 baja el parecido con la corrección real y, en E2, produce más respuestas que borran la función: métricas como ``hallazgo eliminado'' pueden premiar parches destructivos;
+(3) comparación entre el modelo de 1,5B y el de 7B (¿el efecto de la cuantización depende del tamaño?);
+(4) relación con \cite{giagnorio2025quantizing,vallecillos2026smaller,haque2025secure} y con la decisión de PatchLM de usar 4 bits;
+(5) implicaciones prácticas para quien quiera reparar vulnerabilidades con un CLM en hardware limitado.}
+
+\subsection{Amenazas a la validez}
+
+\textbf{Oráculo aproximado.} Bandit detecta patrones conocidos, por lo que no reconoce vulnerabilidades lógicas y puede considerar reparado un parche que solo esconde el patrón. Para reducir este riesgo, se exigió que el parche fuera válido, distinto del original y que conservara sus funciones. \pend{revisión manual de una muestra de parches}.
+
+\textbf{Modelo sin ajuste fino.} Se evaluó el modelo base de PatchLM y no PatchLM, cuyos pesos no están publicados. El efecto de la cuantización en un modelo ajustado puede ser distinto.
+
+\textbf{Contaminación de datos.} Los \emph{commits} de FixMe y las funciones de SecurityEval son públicos y pueden formar parte del entrenamiento de los modelos. Esto afecta por igual a todas las configuraciones de un modelo, por lo que la comparación entre niveles de bits sigue siendo válida, aunque las cifras absolutas pueden estar infladas.
+
+\textbf{Alcance.} El estudio cubre un lenguaje (Python), un método de cuantización (\texttt{bitsandbytes}) y dos GPU. Los tiempos de inferencia dependen del hardware y de la implementación, y no se generalizan a otros entornos. Además, en la corrida de Qwen2.5-Coder-1.5B, las capas que no se cuantizan (embeddings, normalizaciones y capa de salida) se mantuvieron en bfloat16, la precisión por defecto del modelo, mientras que en CodeLlama-7B se fijaron en FP16.
+
+\textbf{Tamaño de muestra.} E2 tiene 49 casos y las tasas de reparación son bajas, por lo que las pruebas tienen poca potencia para detectar diferencias pequeñas.
+
+% =====================================================================
+\section{Conclusiones}\label{sec:conclusiones}
+
+\comp{Redactar al final: responder en una o dos frases cada RQ con los resultados de ambos modelos, indicar la recomendación práctica principal y proponer trabajo futuro (por ejemplo, cuantización a 3 y 2 bits, otros lenguajes, analizadores como Semgrep o CodeQL, y modelos ajustados como PatchLM).}
 
 \bibliographystyle{IEEEtran}
 \bibliography{referencias}
