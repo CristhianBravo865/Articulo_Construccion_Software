@@ -1,0 +1,22 @@
+{
+  "config": "L-16",
+  "modelo": "codellama/CodeLlama-7b-Instruct-hf",
+  "bits": 16,
+  "hardware": "kaggle-t4",
+  "gpu": "Tesla T4",
+  "torch": "2.11.0+cu130",
+  "prompts": 10,
+  "tokens_por_prompt": 128,
+  "repeticiones": 3,
+  "segundos_carga": 9.1,
+  "memoria_modelo_mib": 12852.8,
+  "vram_pico_mib": 13046.8,
+  "ms_por_token_media": 66.28,
+  "ms_por_token_desv": 1.78,
+  "tokens_por_seg": 15.09,
+  "ms_por_token_reps": [
+    68.32,
+    65.45,
+    65.07
+  ]
+}

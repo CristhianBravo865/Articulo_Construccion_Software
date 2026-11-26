@@ -15,7 +15,7 @@ import time
 
 import torch
 
-from comun import RAIZ, cargar_config, construir_prompt, leer_jsonl
+from comun import RAIZ, cargar_config, construir_entrada, leer_jsonl
 from importlib import import_module
 
 cargar_modelo = import_module("02_generar_parches").cargar_modelo
@@ -32,7 +32,8 @@ def main():
     cfg = cargar_config()
     c = cfg["configuraciones"][args.config]
     model_id = cfg["modelos"][c["modelo"]]
-    prompts = [construir_prompt(x["vulnerable"])
+    plantilla = c.get("plantilla", "cruda")
+    prompts = [x["vulnerable"]
                for exp in ("E1", "E2") for x in leer_jsonl(RAIZ / "datos" / f"{exp}.jsonl")[:5]]
 
     torch.cuda.empty_cache()
@@ -43,7 +44,7 @@ def main():
     mem_modelo = torch.cuda.memory_allocated() / 2**20
 
     def generar(p):
-        ent = tok(p, return_tensors="pt").to(modelo.device)
+        ent = construir_entrada(tok, p, plantilla).to(modelo.device)
         torch.cuda.synchronize()
         t = time.perf_counter()
         with torch.no_grad():
@@ -58,7 +59,7 @@ def main():
     por_rep = [sum(r) / (len(prompts) * args.tokens) * 1000 for r in tiempos]  # ms/token
 
     res = {
-        "config": args.config, "modelo": model_id, "bits": c["bits"],
+        "config": args.config, "modelo": model_id, "bits": c["bits"], "plantilla": plantilla,
         "hardware": args.hardware, "gpu": torch.cuda.get_device_name(0),
         "torch": torch.__version__, "prompts": len(prompts), "tokens_por_prompt": args.tokens,
         "repeticiones": args.reps, "segundos_carga": round(t_carga, 1),

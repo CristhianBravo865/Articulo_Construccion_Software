@@ -34,6 +34,25 @@ def construir_prompt(codigo_vulnerable: str) -> str:
     return PROMPT_PATCHLM.format(question=PREGUNTA, vulnerable=codigo_vulnerable)
 
 
+def construir_entrada(tok, codigo_vulnerable: str, plantilla: str = "cruda"):
+    """Tokeniza el prompt de PatchLM.
+
+    cruda: el texto tal cual (como en PatchLM, cuyo modelo ajustado aprendio ese formato).
+    chat:  el mismo texto como mensaje de usuario dentro de la plantilla de chat del modelo
+           (para CodeLlama-Instruct: <s>[INST] ... [/INST]); se quita la marca "### Response:",
+           porque la plantilla ya indica donde empieza la respuesta.
+    """
+    texto = construir_prompt(codigo_vulnerable)
+    if plantilla == "cruda":
+        return tok(texto, return_tensors="pt")
+    if plantilla == "chat":
+        texto = texto.rsplit("### Response:", 1)[0].rstrip() + "\n"
+        return tok.apply_chat_template([{"role": "user", "content": texto}],
+                                       add_generation_prompt=True, return_tensors="pt",
+                                       return_dict=True)
+    raise ValueError(f"plantilla desconocida: {plantilla}")
+
+
 def _recortar_prosa(bloque: str) -> str | None:
     """Quita lineas iniciales de prosa hasta que el resto sea Python con al menos una
     sentencia (un bloque con solo comentarios no cuenta)."""

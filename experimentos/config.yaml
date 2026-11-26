@@ -12,6 +12,12 @@ configuraciones:
   L-16: {modelo: codellama7b, bits: 16}
   L-8:  {modelo: codellama7b, bits: 8}
   L-4:  {modelo: codellama7b, bits: 4}
+  # Mismo CodeLlama, pero con su plantilla de chat ([INST] ... [/INST]).
+  # Las L-* usan el prompt crudo de PatchLM, pensado para su modelo ajustado; el modelo base
+  # sin ajustar copia el codigo o repite el prompt (ver DISENO.md, seccion 11).
+  Lc-16: {modelo: codellama7b, bits: 16, plantilla: chat}
+  Lc-8:  {modelo: codellama7b, bits: 8, plantilla: chat}
+  Lc-4:  {modelo: codellama7b, bits: 4, plantilla: chat}
   Q-16: {modelo: qwen1_5b, bits: 16}
   Q-8:  {modelo: qwen1_5b, bits: 8}
   Q-4:  {modelo: qwen1_5b, bits: 4}

@@ -14,7 +14,7 @@ import torch
 from transformers import (AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig,
                           StoppingCriteria, StoppingCriteriaList)
 
-from comun import (RAIZ, _recortar_prosa, bloques_cerrados, cargar_config, construir_prompt,
+from comun import (RAIZ, _recortar_prosa, bloques_cerrados, cargar_config, construir_entrada,
                    extraer_codigo, leer_jsonl)
 
 
@@ -70,12 +70,13 @@ def main():
     cfg = cargar_config()
     c = cfg["configuraciones"][args.config]
     model_id = cfg["modelos"][c["modelo"]]
+    plantilla = c.get("plantilla", "cruda")
     casos = leer_jsonl(RAIZ / "datos" / f"{args.experimento}.jsonl")[: args.limite]
 
     salida = RAIZ / "resultados" / f"gen_{args.experimento}_{args.config}_{args.hardware}.jsonl"
     hechos = {x["id"] for x in leer_jsonl(salida)} if salida.exists() else set()
     pendientes = [x for x in casos if x["id"] not in hechos]
-    print(f"{args.config}: {model_id} a {c['bits']} bits | {len(pendientes)} pendientes")
+    print(f"{args.config}: {model_id} a {c['bits']} bits, plantilla {plantilla} | {len(pendientes)} pendientes")
     if not pendientes:
         return
 
@@ -88,8 +89,7 @@ def main():
 
     with open(salida, "a", encoding="utf-8") as f:
         for i, caso in enumerate(pendientes, 1):
-            prompt = construir_prompt(caso["vulnerable"])
-            ent = tok(prompt, return_tensors="pt").to(modelo.device)
+            ent = construir_entrada(tok, caso["vulnerable"], plantilla).to(modelo.device)
             if torch.cuda.is_available():
                 torch.cuda.reset_peak_memory_stats()
                 torch.cuda.synchronize()
@@ -113,6 +113,7 @@ def main():
                 "config": args.config,
                 "modelo": model_id,
                 "bits": c["bits"],
+                "plantilla": plantilla,
                 "hardware": args.hardware,
                 "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu",
                 "tokens_entrada": int(ent["input_ids"].shape[1]),

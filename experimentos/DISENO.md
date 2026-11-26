@@ -264,3 +264,40 @@ las respuestas son las mismas, Jaccard = 1,0).
    detectar diferencias: hace falta el modelo de 7B (Colab) para que RQ1 en E2 sea informativa.
 5. Los tiempos de la corrida principal (`segundos` en `resumen.csv`) dependen de la longitud de
    cada respuesta y de la carga de la laptop; para RQ3 se usan solo los de la medición controlada.
+
+## 11. Primera corrida de CodeLlama en Kaggle y relanzamiento con plantilla de chat (26 nov. 2026)
+
+**Corrida L-16/L-8/L-4 (prompt crudo de PatchLM, Kaggle T4, 22 nov.).** Los datos están completos
+(150 + 49 casos por configuración, mismos IDs que la laptop), pero el formato de las respuestas
+invalida E1 como medida de la cuantización:
+
+- El prompt crudo de PatchLM está pensado para su modelo ajustado. El modelo base
+  CodeLlama-7B-Instruct, sin ajustar, casi nunca responde con un bloque de código. En cambio:
+  - repite la plantilla (`### Input:` …);
+  - devuelve el código sin cambios (39 % de E1 con L-16);
+  - o genera texto sin sentido ("### Recommended Books…").
+- Muchas respuestas llegan al tope de 512 tokens (110/150 en E1 con L-16). Por eso esta corrida
+  fue lenta.
+- **Línea base de copia:** usar el código vulnerable como "parche" da CodeBLEU **0,790** y
+  ROUGE-L **0,883** en E1 (n = 141). Es más que cualquier configuración de cualquier modelo.
+  - Las métricas de similitud que usa PatchLM premian no reparar nada, porque la corrección real
+    cambia pocas líneas.
+  - Se reporta en Resultados y en la Discusión.
+- Se conserva como comparación (archivos `*_L-*_kaggle-t4.*`).
+
+**Exclusión en E1.** En 9 de los 150 hunks la versión vulnerable está vacía: la corrección crea el
+archivo entero (`E1-18317`, `E1-2876`, `E1-28778`, `E1-32878`, `E1-33329`, `E1-33643`,
+`E1-34106`, `E1-39499`, `E1-7112`).
+- Pasaron el filtro porque `ast.parse("")` es válido.
+- `04_analizar.py` los excluye en todas las configuraciones: E1 queda con **n = 141**.
+- Con Qwen las conclusiones no cambian: a 4 bits, CodeBLEU baja de 0,601 a 0,538 (p = 0,017) y
+  ROUGE-L de 0,626 a 0,509 (p = 0,0009).
+
+**Relanzamiento Lc-16/Lc-8/Lc-4.**
+- Es el mismo modelo, el mismo texto de PatchLM y la misma decodificación. Cambia solo que el
+  prompt va como mensaje de usuario dentro de la plantilla de chat de CodeLlama
+  (`<s>[INST] … [/INST]`, sin la marca final `### Response:`).
+- Qwen se mantiene con el prompt crudo: respondió con bloques de código desde el piloto.
+- El notebook de Kaggle tiene una celda piloto (5 casos de E2 con Lc-4) que detiene la corrida
+  si menos de 3 respuestas traen un bloque de código cambiado.
+- Diferencia de entorno: Kaggle usó torch 2.11.0+cu130 y la laptop torch 2.6.0+cu124.
